@@ -6,7 +6,7 @@ class Cache {
 	public static function read( $cacheName ){
 		if( CACHELIFE <= 0 ) return;
 		
-		$cacheFile = CACHEPATH . "/" . $cacheName;
+		$cacheFile = CACHEPATH . '/' . $cacheName;
 
 		if( file_exists($cacheFile) ){
 			
@@ -35,7 +35,7 @@ class Cache {
 	
 	public static function write( $cacheName, $content ){
 		
-		$cacheFile = CACHEPATH . $cacheName;
+		$cacheFile = CACHEPATH .'/'. $cacheName;
 		
 		file_put_contents($cacheFile, $content);
 	}
