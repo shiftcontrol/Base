@@ -70,6 +70,7 @@ final class Core {
 			
 		}else if( $cmd == "docs" ){
 			echo Markdown( file_get_contents("system/docs.txt") );
+			exit;
 			
 		}else{
 			# Normal requests
@@ -135,10 +136,11 @@ final class Core {
 		$client = "Std. Client";
 		$team	= "Std. Team";
 		$body 	= "Std **body**";
-		$view 	= $view .'.php';
+		#$view 	= $view .'.php';
 
 		# Import $fields into local scope, overwriting the defaults above
 		extract( $fields );
+$view 	= $view .'.php';
 
 		# Populate Template
 		$viewfn	 = VIEWS .'/'. $view;

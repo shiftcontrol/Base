@@ -26,6 +26,9 @@ RewriteCond %{REQUEST_FILENAME} !-f
 # Rewrite all other URLs to index.php/URL
 RewriteRule .* index.php/$0 [PT,L]
 
+Note on Cache
+	mkdir cache
+	chmod 777 cache
 
 Note on content structure:	
 	If you want to store your content elsewhere, like in Dropbox, 

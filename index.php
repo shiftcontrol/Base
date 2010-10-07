@@ -8,7 +8,7 @@ define("ERROR404",	'system/error/404.txt');
 define("VIEWS", 	'views');
 define("INDEX", 	'index');
 define("EXT",		'.txt');
-define("CACHELIFE",	0); // secs
+define("CACHELIFE",	5); // secs
 define("CACHEPATH",	'cache');
 define("URI",		$_SERVER['REQUEST_URI']);
 
