@@ -1,0 +1,3 @@
+@title:BaseError
+@body:
+404

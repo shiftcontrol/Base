@@ -1,0 +1,62 @@
+sc base, js/081012, revision 0.3
+
+Revisions:
+	0.1	100812	init
+	0.2	100819	dropbox, symlinks, images, reorganized filesystem
+	0.3 101005	Header Module, Cache
+
+Note on file structure:
+	/sys	System files
+	/css	Css files
+	/js		Javascript files
+	/img	Site-wide images
+
+
+Note on content structure:	
+	If you want to store your content elsewhere, like in Dropbox, 
+	place the actual lib folder inside your Dropbox folder and create a symlink from there to here:
+	%> ln -s /Users/jorgen/Dropbox/sc_base/lib /Users/jorgen/Sites/sc_base/lib
+	This way, you sync and share content editing via dropbox :-)
+	/lib		Content
+	/lib/pub/	WWW accessible content
+	
+Note on server config
+	Apache's "FollowSymLinks" must be on if the the lib folder is outside the site's document root
+	(if you are using the Dropbox trick above)
+	<VirtualHost *:80>
+		ServerName	_scbase_db
+		DocumentRoot	/Users/jorgen/Sites/sc_base_dev
+		<Directory "/Users/jorgen/Sites/sc_base_dev">
+		    AllowOverride All
+			Options +FollowSymLinks
+		</Directory>
+	</VirtualHost>
+	
+Modules
+	Cache
+		Built-in.
+		Configure in index.php, Set CACHEPATH and CACHELIFE
+		CACHELIFE = 0 : Disable
+		CACHELIFE > 0 : Lifetime of the cache before its recreated
+		r0.3: Added mtime check on the 'source' of the cache, so the
+		cache is recreated if the 'source' changes. ('source' is the article (.txt) file)
+		
+	Header
+		Optional
+		Enables Plugins (currently used in Media->Unity3d) to add resources to
+		the html header (scripts, styles) when needed
+		
+	Media
+		Optional
+		Extends the parser to replace certain tags with embed codes for various media-types (Unity3d, Flash, etc...)
+
+====
+
+TODO
+- create a view for "match" that iterates the result from getProps() (also "list")
++ cache
+- index page
+- body search
+- Templates can include own files? how to do the index page?
++ Media content / embed-codes for slideshow (many images), flash, movies, unity, java etc -> Markdown?
+- password protect /seed folder

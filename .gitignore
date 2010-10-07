@@ -1,0 +1,5 @@
+sc_base_dev.tmproj
+.DS_Store
+*/.DS_Store
+system/cache
+static
