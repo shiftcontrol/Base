@@ -1,20 +1,21 @@
 <?php defined('VERSION') or die('No direct script access.');
 
 final class Core {
-	
+
 	public static function run(){
+
 		Core::setup();
 		Core::route();
 	}
-	
+
 	public static function setup(){
-		
+
 		# Disable Notices
 		error_reporting(~E_NOTICE);
-		
+
 		# Enable additional Modules
 		require 'system/Cache.php';
-		
+
 		# All text should be written with Markdown syntax.
 		# See Dingus here: http://michelf.com/projects/php-markdown/dingus/
 		# We're using Markdown Extra from http://michelf.com/projects/php-markdown/
@@ -26,36 +27,41 @@ final class Core {
 
 		require 'system/inc/Header.php';
 		Header::setup();
-		
+
 	}
-	
+
 	public static function route(){
 		#TODO: Document
-		
+
+
+
+		//print_r( explode("/", URI) );
+
+
 		$fields = array();
 		list($e, $cmd, $arg) = explode("/", URI);
 		if( ($arg=="") || ($arg=="all") ) $arg = 'list'; // both "/{empty}" and "/all" equals "/list"
 		$args  = explode(",", $arg);
-		
-		
-		echo "cmd:$cmd, arg:$arg";
-				
+
+
+		//echo "URI:". PUBDOCS . URI .", e:$e, cmd:$cmd, arg:$arg";
+
 		# Check Cache
 		$cacheName = $cmd.$arg;
 		#Cache::read( $cacheName );
 
 		# Intercept calls for special urls
 
-		#TODO: Verify		
+		#TODO: Verify
 		# Search- and list-able Document properties (same as the Template defaults (combine?))
 		$properties = array("author", "date", "mdate", "title", "teaser", "tags", "country", "client", "team", "body");
-		
+
 		# list-able Directories
 		$directories = array("projects", "news", "team", "references");
-		
+
 		if( in_array($cmd, $properties) ){
 			# Document properties
-			$compare = !($arg=='list');			
+			$compare = !($arg=='list');
 			$found = Core::matchProp( $cmd, $args, $compare);
 			$body  = print_r( $found, true );
 			$fields["body"] = $body; #Markdown($body);
@@ -63,37 +69,42 @@ final class Core {
 		}else if( in_array($cmd, $directories) && ($arg=='list') ){
 			# Directory-list requests
 			$listController = VIEWS .'/'. $cmd.'_list.php';
-			
+
 			#echo $listController;
 			include( $listController );
 			exit;
-			
+
 		}else if( $cmd == "docs" ){
 			echo Markdown( file_get_contents("system/docs.txt") );
-			exit;
-			
-		}else{
-			# Normal requests
-			$file = Core::getFile( URI );
-			$fields = Core::getFields( $file, true );
+      exit();
+		}else if( (file_exists(PUBDOCS.URI)) && (!is_dir(PUBDOCS.URI)) ){
+		  $fi = new finfo(FILEINFO_MIME,'/usr/share/file/magic');
+      $mime_type = $fi->buffer(file_get_contents(PUBDOCS.URI));
+		  header("Content-Type:$mime_type");
+		  readfile(PUBDOCS.URI);
+      exit();
+	  } else {
+			  # Normal requests
+			  $file = Core::getFile( URI );
+  			$fields = Core::getFields( $file, true );
 		}
-	
+
 		#Core::respond( $fields, $cacheName );
 		Core::respond( $fields, $cacheName, $cmd );
 	}
-	
+
 	##
-	
+
 	public static function Populate($tplName, $fileName){
-		
+
 		$tplName = VIEWS .'/'. $tplName;
-		
+
 		if( !file_exists($tplName) || !file_exists($fileName) ) return "";
 
 		# Import $fields into local scope, overwriting the defaults above
 		$fields = Core::getFields( $fileName, true );
 		extract( $fields );
-		
+
 		list($pathToFolder, $permalink) = Core::getPathInfo( $fileName );
 		#echo "pathToFolder: $pathToFolder, permalink:$permalink\n";
 
@@ -114,14 +125,15 @@ final class Core {
 		#Cache::write($cacheName, $html);
 
 		# Return
-		return $html;	
+		return $html;
 	}
-	
+
 	##
-	
+
 	public static function respond( $fields, $cacheName, $view="projects" ){
 		echo "COULD use view $view";
-		
+		print_r($fields);
+
 		#TODO: Externalize!!
 		# Setup default template values
 		# Note: Only $body allows line breaks
@@ -149,6 +161,9 @@ $view 	= $view .'.php';
 
 		# Output buffering + include() allows php execution in the view files :)
 		ob_start();
+
+		echo $viewfn;
+
 		include( $viewfn );
 		$subject = ob_get_clean();
 
@@ -161,7 +176,7 @@ $view 	= $view .'.php';
 		# Print
 		echo $html;
 	}
-	
+
 	public static function getUrlToFile( $file ){
 		#
 		# Tranform a filesystem path to a url
@@ -186,7 +201,7 @@ $view 	= $view .'.php';
 		#
 		# Search all $property tags, in all files, for a match on $search
 		#TODO: Add Cache
-		
+
 		if( !is_array($search) ) $search = explode(",", $search);
 
 		#echo "<pre>";
@@ -197,7 +212,7 @@ $view 	= $view .'.php';
 		foreach( $files as $file ){
 
 			$props  = Core::getFields($file, false);
-			$fields = explode(",", $props[$property]); 
+			$fields = explode(",", $props[$property]);
 
 			foreach( $fields as $field ){
 				if( $field == "" ) continue;
@@ -207,11 +222,11 @@ $view 	= $view .'.php';
 					if( $compare ){
 						if( $field != $val ) continue;
 					}
-					
+
 					#echo " - Found";
-					
+
 					if( in_array($file, $filter) ) continue;
-					
+
 					$found[] = array(
 						"file"		=> $file,
 						$property	=> $props[$property],
@@ -221,16 +236,16 @@ $view 	= $view .'.php';
 				}
 			}
 		}
-		
-		
-		
+
+
+
 		$results = array(
 			"key"	=> $property,
 			"search"=> implode(", ", $search),
 			"view"	=> "match",
 			"data"	=> $found
 		);
-		
+
 		return $results;
 	}
 
@@ -244,16 +259,16 @@ $view 	= $view .'.php';
 		if( is_dir($path) )	$file = $path .'/'. INDEX . EXT;
 
 		if( !file_exists($file) ) $file = ERROR404;
-		
-		#echo "FILE: $file, PATH: $path\n";	
+
+		#echo "FILE: $file, PATH: $path\n";
 		return $file;
 	}
-	
+
 	public static function getPathInfo( $file ){
 		$a = end( explode(PUBDOCS, $file));
 		$a = explode('/', $a);
 		$b = array_pop($a);
-		
+
 		$pathToFolder = '/'. PUBDOCS . implode('/', $a) .'/';
 		$permalink = implode('/', $a) .'/';
 
@@ -271,7 +286,7 @@ $view 	= $view .'.php';
 			if ( substr($file,0,1)!="." && substr($file,0,2)!="..") {
 				$key = $folder.'/'.$file;
 				if( is_dir( $key ) ){
-					$collection = Core::getFiles( $key, $exclude, $collection );	
+					$collection = Core::getFiles( $key, $exclude, $collection );
 				}else{
 					foreach( glob($folder ."/*.txt") as $filename) {
 						if( !in_array( $filename, $collection ) ){
@@ -283,12 +298,12 @@ $view 	= $view .'.php';
 				}
 			}
 		}
-		closedir($handle); 
+		closedir($handle);
 		return ( $collection );
 	}
 
 	public static function getFields($file, $doProcessBody=true){
-		
+
 		$inf = explode("/", $file);
 		$fil = array_pop($inf);
 		$fld = implode("/", $inf) ."/";
@@ -304,7 +319,7 @@ $view 	= $view .'.php';
 				$value = trim(current(explode("//", $value, 2)));	# remove comments "// comment" on this line
 				$arr["".$key] = trim($value);
 				$i++;
-				
+
 				# Check state
 				#if( $state > 1 ) exit("Not Public");
 
@@ -315,12 +330,13 @@ $view 	= $view .'.php';
 					if( $doProcessBody ){
 						# Run the $value through active plugins
 						$value = Markdown( $value );
-						
+
 						# unfinnished
 						if( class_exists( Media ) ) $value = Media::Process($file, $fld, $value);
 						//if( defined(UNITY3D) ){
 						//	$value = Media::unity3d($file, $fld, $value);
 						//}
+						$value = Media::image($file, $fld, $value);
 					}
 
 					# Prefix path to images
@@ -336,5 +352,5 @@ $view 	= $view .'.php';
 
 		return $arr;
 	}
-	
+
 }

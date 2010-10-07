@@ -1,5 +1,5 @@
 <?php
-
+if( file_exists(PUBDOCS.URI) ) die( readfile(PUBDOCS.URI) );  
 #echo "<pre>\n\$_SERVER: ". print_r( $_SERVER, true ) ."</pre>\n\n";
 
 define("VERSION",	0.3);

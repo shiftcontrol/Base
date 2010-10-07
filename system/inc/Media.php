@@ -40,6 +40,29 @@ final class Media {
 		}
 		return implode("\n", $olines);
 	}
+	
+	public static function image($file, $fld, $value){
+		
+		if( stristr( $value, '!IMG') === FALSE ) return $value;
+
+		/*
+		Trigger syntax:
+		!IMG,src
+		*/
+		
+		$olines = array();
+		$vlines = explode("\n", $value);
+		foreach($vlines as $line){
+			if( stristr( trim($line), '!IMG') !== FALSE ){
+				$cleanline = strip_tags($line);
+				list($tag,$src) = explode(",", trim( $cleanline ));				
+				$line = "<img src='$src' title=''/>";
+			}
+			$olines[] = $line;
+		}
+		return implode("\n", $olines);
+		return implode("\n", $olines);
+	}
 
 
 	public static function swf($file, $fld, $value){
