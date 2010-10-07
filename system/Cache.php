@@ -6,7 +6,7 @@ class Cache {
 	public static function read( $cacheName ){
 		if( CACHELIFE <= 0 ) return;
 		
-		$cacheFile = CACHEPATH . $cacheName;
+		$cacheFile = CACHEPATH . "/" . $cacheName;
 
 		if( file_exists($cacheFile) ){
 			

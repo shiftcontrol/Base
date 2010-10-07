@@ -6,10 +6,25 @@ Revisions:
 	0.3 101005	Header Module, Cache
 
 Note on file structure:
-	/sys	System files
-	/css	Css files
-	/js		Javascript files
-	/img	Site-wide images
+	/cache		Cache
+	/content	Content files
+	/static		Css, Javascript and Img files files
+	/system		System files
+	/views		Template files
+	
+Example .htaccess file
+
+# Turn on URL rewriting
+RewriteEngine On            
+# Installation directory
+RewriteBase /
+# Protect application and system files from being viewed
+RewriteRule ^(sys|libp|lib/draft|lib/priv|view|cache) - [F,L]
+# Allow any files or directories that exist to be displayed directly
+RewriteCond %{REQUEST_FILENAME} !-f
+#RewriteCond %{REQUEST_FILENAME} !-d
+# Rewrite all other URLs to index.php/URL
+RewriteRule .* index.php/$0 [PT,L]
 
 
 Note on content structure:	
