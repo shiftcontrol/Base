@@ -47,6 +47,15 @@ Note on server config
 		</Directory>
 	</VirtualHost>
 	
+	
+Notes on GIT
+	git add file.txt
+	git commit -m "Commit message goes here"
+
+	git fetch
+	git rebase origin/master
+
+	
 Modules
 	Cache
 		Built-in.
