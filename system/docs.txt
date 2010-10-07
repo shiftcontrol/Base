@@ -1,46 +1,64 @@
-sc base, js/081012, revision 0.3
+**Base** `0.3`
 
-Revisions:
+
+**Revisions:**
+
 	0.1	100812	init
 	0.2	100819	dropbox, symlinks, images, reorganized filesystem
 	0.3 101005	Header Module, Cache
+  
 
-Note on file structure:
+**Note on file structure:**
+
 	/cache		Cache
 	/content	Content files
 	/static		Css, Javascript and Img files files
 	/system		System files
 	/views		Template files
+
 	
-Example .htaccess file
+**Example .htaccess file**
 
-# Turn on URL rewriting
-RewriteEngine On            
-# Installation directory
-RewriteBase /
-# Protect application and system files from being viewed
-RewriteRule ^(sys|libp|lib/draft|lib/priv|view|cache) - [F,L]
-# Allow any files or directories that exist to be displayed directly
-RewriteCond %{REQUEST_FILENAME} !-f
-#RewriteCond %{REQUEST_FILENAME} !-d
-# Rewrite all other URLs to index.php/URL
-RewriteRule .* index.php/$0 [PT,L]
+	# Turn on URL rewriting
+	RewriteEngine On            
 
-Note on Cache
+	# Installation directory
+	RewriteBase /
+
+	# Protect application and system files from being viewed
+	RewriteRule ^(sys|libp|lib/draft|lib/priv|view|cache) - [F,L]
+
+	# Allow any files or directories that exist to be displayed directly
+	RewriteCond %{REQUEST_FILENAME} !-f
+
+	# Rewrite all other URLs to index.php/URL
+	RewriteRule .* index.php/$0 [PT,L]
+
+  
+**Note on Cache:** 
+
 	mkdir cache
 	chmod 777 cache
 
-Note on content structure:	
-	If you want to store your content elsewhere, like in Dropbox, 
-	place the actual lib folder inside your Dropbox folder and create a symlink from there to here:
-	%> ln -s /Users/jorgen/Dropbox/sc_base/lib /Users/jorgen/Sites/sc_base/lib
-	This way, you sync and share content editing via dropbox :-)
+  
+**Note on content structure:**
+
+If you want to store your content elsewhere, like in Dropbox, 
+place the actual lib folder inside your Dropbox folder and create a symlink from there to here:  
+	
+	%> ln -s /Users/jorgen/Dropbox/sc_base/lib /Users/jorgen/Sites/sc_base/lib  
+  
+This way, you sync and share content editing via dropbox :-)  
+	
 	/lib		Content
 	/lib/pub/	WWW accessible content
 	
-Note on server config
-	Apache's "FollowSymLinks" must be on if the the lib folder is outside the site's document root
-	(if you are using the Dropbox trick above)
+
+**Note on server config:**  
+
+Apache's "FollowSymLinks" must be on if the the lib folder is outside the site's document root
+(if you are using the Dropbox trick above)
+
 	<VirtualHost *:80>
 		ServerName	_scbase_db
 		DocumentRoot	/Users/jorgen/Sites/sc_base_dev
@@ -49,17 +67,19 @@ Note on server config
 			Options +FollowSymLinks
 		</Directory>
 	</VirtualHost>
+
 	
-	
-Notes on GIT
+**Notes on GIT**
+
 	git add file.txt
 	git commit -m "Commit message goes here"
-
+	git push origin
+	
 	git fetch
 	git rebase origin/master
 
 	
-Modules
+###Modules
 	Cache
 		Built-in.
 		Configure in index.php, Set CACHEPATH and CACHELIFE
@@ -77,13 +97,14 @@ Modules
 		Optional
 		Extends the parser to replace certain tags with embed codes for various media-types (Unity3d, Flash, etc...)
 
-====
+---
 
-TODO
-- create a view for "match" that iterates the result from getProps() (also "list")
-+ cache
-- index page
-- body search
-- Templates can include own files? how to do the index page?
-+ Media content / embed-codes for slideshow (many images), flash, movies, unity, java etc -> Markdown?
-- password protect /seed folder
+**TODO**  
+
+	- create a view for "match" that iterates the result from getProps() (also "list")
+	+ cache
+	- index page
+	- body search
+	- Templates can include own files? how to do the index page?
+	+ Media content / embed-codes for slideshow (many images), flash, movies, unity, java etc -> Markdown?
+	- password protect /seed folder
