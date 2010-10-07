@@ -2,7 +2,7 @@
 
 final class Core {
 	
-	public static function run() {
+	public static function run(){
 		Core::setup();
 		Core::route();
 	}
@@ -36,6 +36,9 @@ final class Core {
 		list($e, $cmd, $arg) = explode("/", URI);
 		if( ($arg=="") || ($arg=="all") ) $arg = 'list'; // both "/{empty}" and "/all" equals "/list"
 		$args  = explode(",", $arg);
+		
+		
+		echo "cmd:$cmd, arg:$arg";
 				
 		# Check Cache
 		$cacheName = $cmd.$arg;
@@ -59,11 +62,14 @@ final class Core {
 
 		}else if( in_array($cmd, $directories) && ($arg=='list') ){
 			# Directory-list requests
-			$listController = VIEWS . "/" . $cmd.'_list.php';
+			$listController = VIEWS .'/'. $cmd.'_list.php';
 			
 			#echo $listController;
 			include( $listController );
 			exit;
+			
+		}else if( $cmd == "docs" ){
+			echo Markdown( file_get_contents("system/docs.txt") );
 			
 		}else{
 			# Normal requests
@@ -79,7 +85,7 @@ final class Core {
 	
 	public static function Populate($tplName, $fileName){
 		
-		$tplName = VIEWS . "/". $tplName;
+		$tplName = VIEWS .'/'. $tplName;
 		
 		if( !file_exists($tplName) || !file_exists($fileName) ) return "";
 
@@ -135,7 +141,7 @@ final class Core {
 		extract( $fields );
 
 		# Populate Template
-		$viewfn	 = VIEWS . "/" . $view;
+		$viewfn	 = VIEWS .'/'. $view;
 		$search  = array('%author%',	'%date%',	'%mdate%', '%title%',	'%teaser%',	'%tags%',	'%country%',	'%client%',	'%team%',	'%mdate%',	'%body%', '%thumb%');
 		$replace = array( $author,		 $date,		 $mdate,	$title, 	 $teaser,    $tags,		 $country,		 $client,	 $team,		 $mdate,	 $body,    $thumb);
 
