@@ -1,5 +1,8 @@
 sc_base_dev.tmproj
 .DS_Store
+.htaccess
 */.DS_Store
 system/cache
+system/tpl
 static
+lib/
