@@ -131,9 +131,6 @@ final class Core {
 	##
 
 	public static function respond( $fields, $cacheName, $view="projects" ){
-		echo "COULD use view $view";
-		print_r($fields);
-
 		#TODO: Externalize!!
 		# Setup default template values
 		# Note: Only $body allows line breaks
@@ -148,11 +145,10 @@ final class Core {
 		$client = "Std. Client";
 		$team	= "Std. Team";
 		$body 	= "Std **body**";
-		#$view 	= $view .'.php';
+		$view 	= $view .'.php';
 
 		# Import $fields into local scope, overwriting the defaults above
 		extract( $fields );
-$view 	= $view .'.php';
 
 		# Populate Template
 		$viewfn	 = VIEWS .'/'. $view;
@@ -161,8 +157,6 @@ $view 	= $view .'.php';
 
 		# Output buffering + include() allows php execution in the view files :)
 		ob_start();
-
-		echo $viewfn;
 
 		include( $viewfn );
 		$subject = ob_get_clean();
