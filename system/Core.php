@@ -58,9 +58,8 @@ final class Core {
 
 		# list-able Directories
 		$directories = array("projects", "news", "team", "references");
-    echo $cmd;
 		if( in_array($cmd, $properties) ){
-			# Document properties        			
+			# Document properties
 			$compare = !($arg=='list');
 			$found = Core::matchProp( $cmd, $args, $compare);
 			$body  = print_r( $found, true );
@@ -294,17 +293,17 @@ final class Core {
 		}
 		closedir($handle);
 		return ( $collection );
-	}     
-	
+	}
+
 	public static function getFilesExt($folder, $sortBy = NULL, $reverse = false) {
-	  $files = Core::getFiles($folder);	                                        
-	  if ($sortBy) {              
-	    $files2 = array();        
+	  $files = Core::getFiles($folder);
+	  if ($sortBy) {
+	    $files2 = array();
 	    foreach($files as $file) {
-	      $fields = Core::getFields($file);	      
+	      $fields = Core::getFields($file);
 	      $files2["$file"] = $fields[$sortBy];
-	    }   
-	    asort($files2);  
+	    }
+	    asort($files2);
 	    $files = array_keys($files2);
 	  }
 	  if ($reverse) $files = array_reverse($files);
