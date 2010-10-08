@@ -58,9 +58,9 @@ final class Core {
 
 		# list-able Directories
 		$directories = array("projects", "news", "team", "references");
-
+    echo $cmd;
 		if( in_array($cmd, $properties) ){
-			# Document properties
+			# Document properties        			
 			$compare = !($arg=='list');
 			$found = Core::matchProp( $cmd, $args, $compare);
 			$body  = print_r( $found, true );
@@ -110,8 +110,8 @@ final class Core {
 
 		# Populate Template
 		$viewfn	 = $tplName;//VIEWS . $view;
-		$search  = array('%author%',	'%date%',	'%mdate%', '%title%',	'%teaser%',	'%tags%',	'%country%',	'%client%',	'%team%',	'%mdate%',	'%body%', '%thumb%');
-		$replace = array( $author,		 $date,		 $mdate,	$title, 	 $teaser,    $tags,		 $country,		 $client,	 $team,		 $mdate,	 $body,    $thumb);
+		$search  = array('%permalink%', '%author%',	'%date%',	'%mdate%', '%title%',	'%teaser%',	'%tags%',	'%country%',	'%client%',	'%team%',	'%mdate%',	'%body%', '%thumb%');
+		$replace = array($permalink, $author,		 $date,		 $mdate,	$title, 	 $teaser,    $tags,		 $country,		 $client,	 $team,		 $mdate,	 $body,    $thumb);
 
 		# Output buffering + include() allows php execution in the view files :)
 		ob_start();
@@ -294,6 +294,21 @@ final class Core {
 		}
 		closedir($handle);
 		return ( $collection );
+	}     
+	
+	public static function getFilesExt($folder, $sortBy = NULL, $reverse = false) {
+	  $files = Core::getFiles($folder);	                                        
+	  if ($sortBy) {              
+	    $files2 = array();        
+	    foreach($files as $file) {
+	      $fields = Core::getFields($file);	      
+	      $files2["$file"] = $fields[$sortBy];
+	    }   
+	    asort($files2);  
+	    $files = array_keys($files2);
+	  }
+	  if ($reverse) $files = array_reverse($files);
+	  return $files;
 	}
 
 	public static function getFields($file, $doProcessBody=true){
@@ -327,10 +342,6 @@ final class Core {
 
 						# unfinnished
 						if( class_exists( Media ) ) $value = Media::Process($file, $fld, $value);
-						//if( defined(UNITY3D) ){
-						//	$value = Media::unity3d($file, $fld, $value);
-						//}
-						$value = Media::image($file, $fld, $value);
 					}
 
 					# Prefix path to images

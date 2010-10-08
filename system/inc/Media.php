@@ -7,6 +7,7 @@ final class Media {
 	public static function Process($file, $fld, $value){
 		$value = Media::unity3d($file, $fld, $value);
 		$value = Media::swf($file, $fld, $value);
+		$value = Media::image($file, $fld, $value);
 		
 		return $value;
 	}

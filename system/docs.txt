@@ -106,5 +106,25 @@ Apache's "FollowSymLinks" must be on if the the lib folder is outside the site's
 	- index page
 	- body search
 	- Templates can include own files? how to do the index page?
-	+ Media content / embed-codes for slideshow (many images), flash, movies, unity, java etc -> Markdown?
-	- password protect /seed folder
+	+ Media content / embed-codes for slideshow (many images), flash, movies, unity, java etc -> Markdown?	
+	- password protect /seed folder                                                                       
+	
+	Marcins requests                       
+	- cleanup of Core::Populate and Core::respond
+	- adding system tags like %permalink% to avoid <?php echo ... ?>
+	- directory 'filters' - listing all subdirectories meeting criteria     
+		All below might require defining list of possible fields in index.php or sth config file
+		a) Just use name of any file field. Would be nice to allow singular form but we can keep it simple. 
+		And nobody said I cant have "@tag" field in my data files instead of "@tags"
+		- /projects/tags/datavis
+		- /projects/clients/zdf
+		b) Special case if second param is all numbers, assume using @date in YYYYMMDD format
+		- /projects/2010
+		c) Pagination using reserved "page" word
+		- /projects/page/1                      
+		- /projects/tags/datavis/page/2 #more advanced 
+   	- cached image resizer
+		Automatically capture request for image files jellyfish.jpg?s=800, generate image of given 
+		size and cache it. Might require predefined list of accepted sizes for security reasons so 
+		nobody will ask for image jellyfish.jpg?s=1000000000000000000
+	
