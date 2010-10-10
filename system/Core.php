@@ -1,4 +1,4 @@
-<?php defined('VERSION') or die('No direct script access.');    
+<?php defined('VERSION') or die('No direct script access.');
 
 function addPercentages($n) {
 	return "%".$n."%";
@@ -7,7 +7,7 @@ function addPercentages($n) {
 final class Core {
 
 	public static function run(){
-		Core::setup();  
+		Core::setup();
 		Core::route();
 	}
 
@@ -33,15 +33,15 @@ final class Core {
 
 	}
 
-	public static function route(){  
+	public static function route(){
 		global $BASE_DIRECTORIES;
-		
+
      	$fields = array();
 		list($e, $cmd, $arg) = explode("/", URI);
 		if( ($arg=="") || ($arg=="all") ) $arg = 'list'; // both "/{empty}" and "/all" equals "/list"
 		$args  = explode(",", $arg);
 
-    	# Check Cache          
+    	# Check Cache
 		//TODO(marcin): better cache name e.g. replace all '/' with '_'
 		$cacheName = $cmd.$arg;
 		#Cache::read( $cacheName );
@@ -50,12 +50,12 @@ final class Core {
 
 		#TODO: Verify
 		# Search- and list-able Document properties (same as the Template defaults (combine?))
-		
-		# list-able Directories 
+
+		# list-able Directories
 		/*
 		$properties = array("author", "date", "mdate", "title", "teaser", "tags", "country", "client", "team", "body");
-		if( in_array($cmd, $properties) ){    
-			//TODO(marcin): this has to be killed and moved 
+		if( in_array($cmd, $properties) ){
+			//TODO(marcin): this has to be killed and moved
 			//from /tags to /projects/tags
 			# Document properties
 			$compare = !($arg=='list');
@@ -63,17 +63,17 @@ final class Core {
 			$body  = print_r( $found, true );
 			$fields["body"] = $body; #Markdown($body);
 
-		} else   
-		*/   
+		} else
+		*/
 		if( in_array($cmd, $BASE_DIRECTORIES) && ($arg=='list') ){
-			# Directory-list requests    
+			# Directory-list requests
 			$file = PUBDOCS.URI.INDEX.EXT;
 			if (file_exists($file)) {
 				Core::respond( $file, $cacheName, $cmd.'_list.php');
 			}
 			else {
 				$listController = VIEWS .'/'. $cmd.'_list.php';
-				include( $listController ); 
+				include( $listController );
 				exit();
 			}
 		} else if( $cmd == "docs" ){
@@ -85,61 +85,61 @@ final class Core {
 			header("Content-Type:$mime_type");
 			readfile(PUBDOCS.URI);
 			exit("");
-		} else {			
+		} else {
 			# Normal requests
 			$file = Core::getFile( URI );
 			Core::respond( $file, $cacheName);
 		}
 	}
 
-	## 
-                                                                      
+	##
+
 	public static function populate($view, $fileName) {
 		Core::respond($fileName, NULL, $view);
-	}                                                              
-	
+	}
+
  	public static function respond( $fileName, $cacheName, $view="projects.php" ){
-		global $BASE_FIELDS, $replace;  
-		
-        
-        $fields = Core::getFields( $fileName, true );  
-        
+		global $BASE_FIELDS, $replace;
+
+
+        $fields = Core::getFields( $fileName, true );
+
 		list($pathToFolder, $permalink) = Core::getPathInfo( $fileName );
 
 		$local = array(
 			"permalink" => $permalink
-		);                
-		                     
+		);
+
 		//echo $fields['view'] . "###";
 		if (($fields['view'])) {
 			$view = $fields['view'];
-		} 		
+		}
 		$viewfn	 = VIEWS .'/'. $view;
 
-		$tags =  $local + $fields + $BASE_FIELDS; 
+		$tags =  $local + $fields + $BASE_FIELDS;
 		$keys = array_map("addPercentages", array_keys($tags));
-		$values = array_values($tags); 
-		
+		$values = array_values($tags);
+
 		//print_r($toReplace);
 
-		# Import $fields into local scope, overwriting the defaults above    
+		# Import $fields into local scope, overwriting the defaults above
 		//extract( $BASE_FIELDS );
-		//extract( $fields );   
+		//extract( $fields );
   		//global $search, $replace;
 		//$search  = array('%permalink%', '%author%',	'%date%',	'%mdate%', '%title%',	'%teaser%',	'%tags%',	'%country%',	'%client%',	'%team%',	'%mdate%',	'%body%', '%thumb%');
 		//$replace = array( $permalink, $author,		 $date,		 $mdate,	$title, 	 $teaser,    $tags,		 $country,		 $client,	 $team,		 $mdate,	 $body,    $thumb);
-		
+
         # Populate Template
-		
-		
+
+
 		# Output buffering + include() allows php execution in the view files :)
 		ob_start();
 		include( $viewfn );
 		$subject = ob_get_clean();
-		
+
 		# Replace template tags
 		$html 	 = str_replace($keys, $values, $subject);
-		
+
 		# Write Cache
 		Cache::write($cacheName, $html);
 
