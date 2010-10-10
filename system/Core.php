@@ -1,10 +1,13 @@
-<?php defined('VERSION') or die('No direct script access.');
+<?php defined('VERSION') or die('No direct script access.');    
+
+function addPercentages($n) {
+	return "%".$n."%";
+}
 
 final class Core {
 
 	public static function run(){
-
-		Core::setup();
+		Core::setup();  
 		Core::route();
 	}
 
@@ -30,23 +33,16 @@ final class Core {
 
 	}
 
-	public static function route(){
-		#TODO: Document
-
-
-
-		//print_r( explode("/", URI) );
-
-
-		$fields = array();
+	public static function route(){  
+		global $BASE_DIRECTORIES;
+		
+     	$fields = array();
 		list($e, $cmd, $arg) = explode("/", URI);
 		if( ($arg=="") || ($arg=="all") ) $arg = 'list'; // both "/{empty}" and "/all" equals "/list"
 		$args  = explode(",", $arg);
 
-
-		//echo "URI:". PUBDOCS . URI .", e:$e, cmd:$cmd, arg:$arg";
-
-		# Check Cache
+    	# Check Cache          
+		//TODO(marcin): better cache name e.g. replace all '/' with '_'
 		$cacheName = $cmd.$arg;
 		#Cache::read( $cacheName );
 
@@ -54,115 +50,96 @@ final class Core {
 
 		#TODO: Verify
 		# Search- and list-able Document properties (same as the Template defaults (combine?))
+		
+		# list-able Directories 
+		/*
 		$properties = array("author", "date", "mdate", "title", "teaser", "tags", "country", "client", "team", "body");
-
-		# list-able Directories
-		$directories = array("projects", "news", "team", "references");
-		if( in_array($cmd, $properties) ){
+		if( in_array($cmd, $properties) ){    
+			//TODO(marcin): this has to be killed and moved 
+			//from /tags to /projects/tags
 			# Document properties
 			$compare = !($arg=='list');
 			$found = Core::matchProp( $cmd, $args, $compare);
 			$body  = print_r( $found, true );
 			$fields["body"] = $body; #Markdown($body);
 
-		}else if( in_array($cmd, $directories) && ($arg=='list') ){
-			# Directory-list requests
-			$listController = VIEWS .'/'. $cmd.'_list.php';
-
-			#echo $listController;
-			include( $listController );
-			exit;
-
-		}else if( $cmd == "docs" ){
+		} else   
+		*/   
+		if( in_array($cmd, $BASE_DIRECTORIES) && ($arg=='list') ){
+			# Directory-list requests    
+			$file = PUBDOCS.URI.INDEX.EXT;
+			if (file_exists($file)) {
+				Core::respond( $file, $cacheName, $cmd.'_list.php');
+			}
+			else {
+				$listController = VIEWS .'/'. $cmd.'_list.php';
+				include( $listController ); 
+				exit();
+			}
+		} else if( $cmd == "docs" ){
 			echo Markdown( file_get_contents("system/docs.txt") );
-      exit();
-		}else if( (file_exists(PUBDOCS.URI)) && (!is_dir(PUBDOCS.URI)) ){
-		  $fi = new finfo(FILEINFO_MIME,'/usr/share/file/magic');
-      $mime_type = $fi->buffer(file_get_contents(PUBDOCS.URI));
-		  header("Content-Type:$mime_type");
-		  readfile(PUBDOCS.URI);
-      exit();
-	  } else {
-			  # Normal requests
-			  $file = Core::getFile( URI );
-  			$fields = Core::getFields( $file, true );
+      		exit();
+		} else if( (file_exists(PUBDOCS.URI)) && (!is_dir(PUBDOCS.URI)) ){
+			$fi = new finfo(FILEINFO_MIME,'/usr/share/file/magic');
+			$mime_type = $fi->buffer(file_get_contents(PUBDOCS.URI));
+			header("Content-Type:$mime_type");
+			readfile(PUBDOCS.URI);
+			exit("");
+		} else {			
+			# Normal requests
+			$file = Core::getFile( URI );
+			Core::respond( $file, $cacheName);
 		}
-
-		#Core::respond( $fields, $cacheName );
-		Core::respond( $fields, $cacheName, $cmd );
 	}
 
-	##
-
-	public static function Populate($tplName, $fileName){
-
-		$tplName = VIEWS .'/'. $tplName;
-
-		if( !file_exists($tplName) || !file_exists($fileName) ) return "";
-
-		# Import $fields into local scope, overwriting the defaults above
-		$fields = Core::getFields( $fileName, true );
-		extract( $fields );
-
+	## 
+                                                                      
+	public static function populate($view, $fileName) {
+		Core::respond($fileName, NULL, $view);
+	}                                                              
+	
+ 	public static function respond( $fileName, $cacheName, $view="projects.php" ){
+		global $BASE_FIELDS, $replace;  
+		
+        
+        $fields = Core::getFields( $fileName, true );  
+        
 		list($pathToFolder, $permalink) = Core::getPathInfo( $fileName );
-		#echo "pathToFolder: $pathToFolder, permalink:$permalink\n";
 
-		# Populate Template
-		$viewfn	 = $tplName;//VIEWS . $view;
-		$search  = array('%permalink%', '%author%',	'%date%',	'%mdate%', '%title%',	'%teaser%',	'%tags%',	'%country%',	'%client%',	'%team%',	'%mdate%',	'%body%', '%thumb%');
-		$replace = array($permalink, $author,		 $date,		 $mdate,	$title, 	 $teaser,    $tags,		 $country,		 $client,	 $team,		 $mdate,	 $body,    $thumb);
-
-		# Output buffering + include() allows php execution in the view files :)
-		ob_start();
-		include( $viewfn );
-		$subject = ob_get_clean();
-
-		# Replace template tags
-		$html 	 = str_replace($search, $replace, $subject);
-
-		# Write Cache
-		#Cache::write($cacheName, $html);
-
-		# Return
-		return $html;
-	}
-
-	##
-
-	public static function respond( $fields, $cacheName, $view="projects" ){
-		#TODO: Externalize!!
-		# Setup default template values
-		# Note: Only $body allows line breaks
-		$state	= 1;		// 1:public, 2:review, 3:draft, 4:private
-		$author	= "Std. Author";
-		$date	= "100814";
-		$mdate	= "00";
-		$title 	= "Std Title";
-		$teaser = "Std Teaser";
-		$tags	= array();
-		$country= "ISO";
-		$client = "Std. Client";
-		$team	= "Std. Team";
-		$body 	= "Std **body**";
-		$view 	= $view .'.php';
-
-		# Import $fields into local scope, overwriting the defaults above
-		extract( $fields );
-
-		# Populate Template
+		$local = array(
+			"permalink" => $permalink
+		);                
+		                     
+		//echo $fields['view'] . "###";
+		if (($fields['view'])) {
+			$view = $fields['view'];
+		} 		
 		$viewfn	 = VIEWS .'/'. $view;
-		$search  = array('%author%',	'%date%',	'%mdate%', '%title%',	'%teaser%',	'%tags%',	'%country%',	'%client%',	'%team%',	'%mdate%',	'%body%', '%thumb%');
-		$replace = array( $author,		 $date,		 $mdate,	$title, 	 $teaser,    $tags,		 $country,		 $client,	 $team,		 $mdate,	 $body,    $thumb);
 
+		$tags =  $local + $fields + $BASE_FIELDS; 
+		$keys = array_map("addPercentages", array_keys($tags));
+		$values = array_values($tags); 
+		
+		//print_r($toReplace);
+
+		# Import $fields into local scope, overwriting the defaults above    
+		//extract( $BASE_FIELDS );
+		//extract( $fields );   
+  		//global $search, $replace;
+		//$search  = array('%permalink%', '%author%',	'%date%',	'%mdate%', '%title%',	'%teaser%',	'%tags%',	'%country%',	'%client%',	'%team%',	'%mdate%',	'%body%', '%thumb%');
+		//$replace = array( $permalink, $author,		 $date,		 $mdate,	$title, 	 $teaser,    $tags,		 $country,		 $client,	 $team,		 $mdate,	 $body,    $thumb);
+		
+        # Populate Template
+		
+		
 		# Output buffering + include() allows php execution in the view files :)
 		ob_start();
-
 		include( $viewfn );
 		$subject = ob_get_clean();
-
+		
 		# Replace template tags
-		$html 	 = str_replace($search, $replace, $subject);
-
+		$html 	 = str_replace($keys, $values, $subject);
+		
 		# Write Cache
 		Cache::write($cacheName, $html);
 

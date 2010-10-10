@@ -8,6 +8,7 @@ final class Media {
 		$value = Media::unity3d($file, $fld, $value);
 		$value = Media::swf($file, $fld, $value);
 		$value = Media::image($file, $fld, $value);
+		$value = Media::vimeo($file, $fld, $value);
 		
 		return $value;
 	}
@@ -41,27 +42,24 @@ final class Media {
 		}
 		return implode("\n", $olines);
 	}
-	
-	public static function image($file, $fld, $value){
-		
+	                                                  
+	/*
+	Trigger syntax:
+	!IMG,src
+	*/
+	public static function image($file, $fld, $value){		
 		if( stristr( $value, '!IMG') === FALSE ) return $value;
 
-		/*
-		Trigger syntax:
-		!IMG,src
-		*/
-		
 		$olines = array();
 		$vlines = explode("\n", $value);
 		foreach($vlines as $line){
 			if( stristr( trim($line), '!IMG') !== FALSE ){
 				$cleanline = strip_tags($line);
 				list($tag,$src) = explode(",", trim( $cleanline ));				
-				$line = "<img src='$src' title=''/>";
+				$line = "<img src='$src'/>";
 			}
 			$olines[] = $line;
 		}
-		return implode("\n", $olines);
 		return implode("\n", $olines);
 	}
 
@@ -73,5 +71,24 @@ final class Media {
 	
 	public static function quicktime($file, $fld, $value){}
 	
+	/*
+	Trigger syntax:
+	!VIMEO,id,width,height
+	*/
+	public static function vimeo($file, $fld, $value) {
+		if( stristr( $value, '!VIMEO') === FALSE ) return $value;
+		
+		$olines = array();
+		$vlines = explode("\n", $value);
+		foreach($vlines as $line){
+			if( stristr( trim($line), '!VIMEO') !== FALSE ){
+				$cleanline = strip_tags($line);
+				list($tag,$id,$width,$height) = explode(",", trim( $cleanline ));				
+				$line = "<p class='centercontent'><iframe src=\"http://player.vimeo.com/video/$id\" width=\"$width\" height=\"$height\" frameborder=\"0\"></iframe></p>";
+			}
+			$olines[] = $line;
+		}
+		return implode("\n", $olines);
+	}
 	
 }	
