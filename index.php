@@ -1,9 +1,5 @@
 <?php                        
 
-//if( file_exists(PUBDOCS.URI) ) die( readfile(PUBDOCS.URI) );    
-
-#echo "<pre>\n\$_SERVER: ". print_r( $_SERVER, true ) ."</pre>\n\n";
-
 define("VERSION",	0.3);
 define("PUBDOCS",	'content/pub');
 define("ERROR404",	'system/error/404.txt');
@@ -22,7 +18,7 @@ $BASE_FIELDS = array(
 	"date"	=> "100814",	//TODO(marcin): should default to something more smart
 	"mdate"	=> "00",
 	"title" => "",    
-	"thumb" => "thumb.png",
+	"thumb" => "thumb.jpg",
 	"tags"	=> array(),
 	"country"=> "ISO",
 	"client" => "Std. Client",

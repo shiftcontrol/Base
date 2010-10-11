@@ -55,8 +55,8 @@ final class Media {
 		foreach($vlines as $line){
 			if( stristr( trim($line), '!IMG') !== FALSE ){
 				$cleanline = strip_tags($line);
-				list($tag,$src) = explode(",", trim( $cleanline ));				
-				$line = "<img src='$src'/>";
+				list($tag,$src,$title) = explode(",", trim( $cleanline ));				
+				$line = "<img src='$src' title='$title'/>";
 			}
 			$olines[] = $line;
 		}
