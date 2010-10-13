@@ -18,13 +18,22 @@ $BASE_FIELDS = array(
 	"date"	=> "100814",	//TODO(marcin): should default to something more smart
 	"mdate"	=> "00",
 	"title" => "",    
-	"thumb" => "thumb.jpg",
+	"thumb" => "../../static/img/thumb.png",
+	"tags"	=> array(),
+	"categories"	=> array(),
 	"tags"	=> array(),
 	"country"=> "ISO",
 	"client" => "Std. Client",
 	"team"	=> "Std. Team",
 	"body" 	=> "Std **body**"	
-); 
+);    
+
+$BASE_FILTERS = array(
+	"category" => "categories",
+	"tag" => "tags",
+	"technology" => "technologies",
+	"date" => "date"
+);
     
 require 'system/Core.php';   
 Core::run();

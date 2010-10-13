@@ -2,7 +2,7 @@
 
 function addPercentages($n) {
 	return "%".$n."%";
-}
+}    
 
 final class Core {
 
@@ -98,27 +98,33 @@ final class Core {
 		Core::respond($fileName, NULL, $view);
 	}
 
- 	public static function respond( $fileName, $cacheName, $view="projects.php" ){
+ 	public static function respond( $fileName, $cacheName, $view = ""){
 		global $BASE_FIELDS, $replace;
 
+        $fileFields = Core::getFields( $fileName, true );
 
-        $fields = Core::getFields( $fileName, true );
+		list($pathToFolder, $permalink, $path) = Core::getPathInfo( $fileName );
 
-		list($pathToFolder, $permalink) = Core::getPathInfo( $fileName );
-
-		$local = array(
+		$localFields = array(
 			"permalink" => $permalink
-		);
+		);                      
+		  
+		if ($view == "") {
+			$view = $path[0].".php";
+		}		
 
 		//echo $fields['view'] . "###";
-		if (($fields['view'])) {
-			$view = $fields['view'];
+		if (($fileFields['view'])) {
+			$view = $fileFields['view'];
 		}
-		$viewfn	 = VIEWS .'/'. $view;
+		$viewfn	 = VIEWS .'/'. $view;   
+		
+		if (!file_exists($viewfn)) {
+			echo "";
+			return;
+		}
 
-		$tags =  $local + $fields + $BASE_FIELDS;
-		$keys = array_map("addPercentages", array_keys($tags));
-		$values = array_values($tags);
+		$fields =  $localFields + $fileFields + $BASE_FIELDS;
 
 		//print_r($toReplace);
 
@@ -137,7 +143,9 @@ final class Core {
 		include( $viewfn );
 		$subject = ob_get_clean();
 
-		# Replace template tags
+		# Replace template tags       
+		$keys = array_map("addPercentages", array_keys($fields));
+		$values = array_values($fields);
 		$html 	 = str_replace($keys, $values, $subject);
 
 		# Write Cache
@@ -237,12 +245,13 @@ final class Core {
 	public static function getPathInfo( $file ){
 		$a = end( explode(PUBDOCS, $file));
 		$a = explode('/', $a);
-		$b = array_pop($a);
-
+		$b = array_pop($a);                
+		$path = explode("/", end( explode(PUBDOCS."/", $file)));
+		
 		$pathToFolder = '/'. PUBDOCS . implode('/', $a) .'/';
 		$permalink = implode('/', $a) .'/';
 
-		return array($pathToFolder, $permalink);
+		return array($pathToFolder, $permalink, $path);
 	}
 
 	public static function getFiles( $folder=NULL, $exclude=NULL, $collection=NULL){
@@ -250,17 +259,17 @@ final class Core {
 		if( $folder === NULL )		$folder = PUBDOCS;
 		if( $exclude === NULL )		$exclude = array();
 		if( $collection === NULL )	$collection = array();
-
+        
 		$handle = opendir( $folder );
 		while (($file = readdir($handle))!==false) {
 			if ( substr($file,0,1)!="." && substr($file,0,2)!="..") {
-				$key = $folder.'/'.$file;
+				$key = $folder.'/'.$file;                                          
 				if( is_dir( $key ) ){
 					$collection = Core::getFiles( $key, $exclude, $collection );
 				}else{
 					foreach( glob($folder ."/*.txt") as $filename) {
 						if( !in_array( $filename, $collection ) ){
-							if( !in_array( $file, $exclude) ){
+							if( !in_array( $file, $exclude) && !in_array( $filename, $exclude)){
 								$collection[] = $filename;
 							}
 						}
@@ -273,10 +282,10 @@ final class Core {
 	}
 
 	public static function getFilesExt($folder, $sortBy = NULL, $reverse = false) {
-	  $files = Core::getFiles($folder);
+	  $files = Core::getFiles($folder, array("$folder/index.txt"));
 	  if ($sortBy) {
 	    $files2 = array();
-	    foreach($files as $file) {
+	    foreach($files as $file) {		  
 	      $fields = Core::getFields($file);
 	      $files2["$file"] = $fields[$sortBy];
 	    }
