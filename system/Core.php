@@ -1,11 +1,11 @@
 <?php defined('VERSION') or die('No direct script access.');
 
-require 'system/inc/Media.php'; 
+require 'system/inc/Media.php';
 require 'system/inc/Header.php';
 
 function addPercentages($n) {
 	return "%".$n."%";
-}   
+}
 
 final class Core {
 
@@ -29,51 +29,27 @@ final class Core {
 		require 'system/inc/markdown.php';
 
 		# Require Plugins
-		
+
 		Media::setup();
 		Header::setup();
 
 	}
 
 	public static function route(){
-		global $BASE_DIRECTORIES;  
+		global $BASE_DIRECTORIES;
 		global $BASE_FILTERS;
-		
+
      	$fields = array();
 		//list($e, $cmd, $arg, $subarg) = explode("/", URI);
-		list($e, $cmd, $arg, $subarg) = array_pad(explode("/", URI), 4, ""); 
+		list($e, $cmd, $arg, $subarg) = array_pad(explode("/", URI), 4, "");
 		if( ($arg=="") || ($arg=="all") ) $arg = 'list'; // both "/{empty}" and "/all" equals "/list"
 		$args  = explode(",", $arg);
 
     	# Check Cache
 		//TODO(marcin): better cache name e.g. replace all '/' with '_'
 		$cacheName = $cmd.$arg;
-		Cache::read( $cacheName );
-
-		# Intercept calls for special urls
-
-		#TODO: Verify
-		# Search- and list-able Document properties (same as the Template defaults (combine?))
-
-		# list-able Directories
-		/*
-		$properties = array("author", "date", "mdate", "title", "teaser", "tags", "country", "client", "team", "body");
-		if( in_array($cmd, $properties) ){
-			//TODO(marcin): this has to be killed and moved
-			//from /tags to /projects/tags
-			# Document properties
-			$compare = !($arg=='list');
-			$found = Core::matchProp( $cmd, $args, $compare);
-			$body  = print_r( $found, true );
-			$fields["body"] = $body; #Markdown($body);
-
-		} else
-		*/       
-		
-		//echo $cmd.in_array($cmd, $BASE_DIRECTORIES);
-		//echo $arg.in_array($arg, array_keys($BASE_FILTERS));
-		
-		if( in_array($cmd, $BASE_DIRECTORIES) && ($arg=='list') ){
+	    if( in_array($cmd, $BASE_DIRECTORIES) && ($arg=='list') ){
+			Cache::read( $cacheName );
 			# Directory-list requests
 			$file = PUBDOCS.URI.INDEX.EXT;
 			if (file_exists($file)) {
@@ -83,104 +59,107 @@ final class Core {
 				$listController = VIEWS .'/'. $cmd.'_list.php';
 				include( $listController );
 				exit();
-			} 
-		
+			}
+
 		}
 		else if( in_array($cmd, $BASE_DIRECTORIES) && in_array($arg, array_keys($BASE_FILTERS)) ){
+			Cache::read( $cacheName );
 			$file = PUBDOCS."/$cmd/".INDEX.EXT;
-			if (file_exists($file)) {    
+			if (file_exists($file)) {
 				$filter = $arg;
 				$filterArgs = str_replace("-"," ", $subarg);
 				Core::respond( $file, $cacheName, $cmd.'_list.php', $filter, $filterArgs);
 			}
-		} 
+		}
 		else if( $cmd == "docs" ){
 			echo Markdown( file_get_contents("system/docs.txt") );
       		exit();
-		} 
+		}
 		else if( (file_exists(PUBDOCS.URI)) && (!is_dir(PUBDOCS.URI)) ){
 			//$fi = new finfo(FILEINFO_MIME,'/usr/share/file/magic');
 			//$mime_type = $fi->buffer(file_get_contents(PUBDOCS.URI));
-			
+
 			//PHP 5.3
 			//$finfo = finfo_open(FILEINFO_MIME_TYPE);
 			//$mime_type = finfo_file($finfo, PUBDOCS.URI);
-			
+
 			//PHP 5.2
 			$mime_type = mime_content_type(PUBDOCS.URI);
 			header("Content-Type:$mime_type");
 			readfile(PUBDOCS.URI);
 			exit("");
-		} 
+		}
 		else {
-			# Normal requests
+			//Cache::read( $cacheName );
+			//die("Normal request");
+			# Normal folder requests
 			$file = Core::getFile( URI );
 			Core::respond( $file, $cacheName);
 		}
 	}
 
     public static function populate($view, $fileName) {
-		Core::respond($fileName, NULL, $view);  
-	}  
- 
+		Core::respond($fileName, NULL, $view);
+	}
+
  	public static function respond( $fileName, $cacheName, $view = "", $filter="", $filterArgs=""){
 		global $BASE_FIELDS;
-		
-        $fileFields = Core::getFields( $fileName, true, true ); 
+
+        $fileFields = Core::getFields( $fileName, true, true );
 
 		list($pathToFolder, $permalink, $path) = Core::getPathInfo( $fileName );
 
 		$localFields = array(
 			"permalink" => $permalink
-		);                      
-		  
+		);
+
 		if ($view == "") {
 			$view = $path[0].".php";
-		}		
+		}
 
 		//echo $fields['view'] . "###";
 		if (isset($fileFields['view'])) {
 			$view = $fileFields['view'];
 		}
-		$viewfn	 = VIEWS .'/'. $view; 
-		
+		$viewfn	 = VIEWS .'/'. $view;
+
 		//echo "Core:respond fileName:$fileName\n";
-  		//echo $viewfn . "\n";  
-		
+  		//echo $viewfn . "\n";
+
 		if (!file_exists($viewfn) || is_dir($viewfn)) {
 			error_log("Core:respond empty template for fileName:$fileName\n");
 			return;
-		}        
-		
+		}
+
 		$fields =  $localFields + $fileFields + $BASE_FIELDS;
-	   
-        # Populate Template  
-		
+
+        # Populate Template
+
 
 		# Output buffering + include() allows php execution in the view files :)
 		ob_start();
 		include( $viewfn );
 		$subject = ob_get_clean();
 
-		# Replace template tags       
-		$keys = array_map("addPercentages", array_keys($fields)); 		
-		//$keys = array_keys($fields); 
-		$values = array_values($fields);		
-		   	
-		//$html 	 = str_replace($keys, $values, $subject);   
-		//$html 	 = str_replace(array("a", "b"), array("A","B"), $subject); 
-		                                         
+		# Replace template tags
+		$keys = array_map("addPercentages", array_keys($fields));
+		//$keys = array_keys($fields);
+		$values = array_values($fields);
+
+		//$html 	 = str_replace($keys, $values, $subject);
+		//$html 	 = str_replace(array("a", "b"), array("A","B"), $subject);
+
 		//error_log("Core:respond fileName:$fileName\n");
 		/*
 		echo "Core:respond fileName:$fileName\n";
 		echo "Core:respond keys\n";
-		print_r($keys);             
+		print_r($keys);
 		echo "Core:respond values\n";
-		print_r($values);        
+		print_r($values);
 		/**/
-		$html 	 = str_replace($keys, $values, $subject);   
+		$html 	 = str_replace($keys, $values, $subject);
 		//$html = $subject;
-		
+
 		# Write Cache
 		Cache::write($cacheName, $html);
 
@@ -266,10 +245,16 @@ final class Core {
 		$path = PUBDOCS . $folder;
 		if( $path == PUBDOCS ) $path = PUBDOCS .'/index';
 
-		$file = $path . EXT;
-		if( is_dir($path) )	$file = $path .'/'. INDEX . EXT;
+		$file = $path;
+		if( is_dir($path) )	{
+			$file = $path .'/'. INDEX . EXT;
+		}
+
+		error_log("Core::getFile folder : $folder");
+		error_log("Core::getFile path : $path");
 
 		if( !file_exists($file) ) {
+			error_log("Core::getFile path : $path");
 			error_log("Core::getFile doesn't exist : $file");
 			$file = ERROR404;
 		}
@@ -280,15 +265,18 @@ final class Core {
 
 	public static function getPathInfo( $file ){
 		$a = explode(PUBDOCS, trim($file, "/"));
-		$a = end($a);          
+		$a = end($a);
 		$a = explode('/', $a);
-		$b = array_pop($a);       
+		$b = array_pop($a);
 		$path = explode(PUBDOCS."/", $file);
-		$path = end($path);         
-		$path = explode("/", $path);  
-		
+		$path = end($path);
+		$path = explode("/", $path);
+
 		$pathToFolder = '/'. PUBDOCS . implode('/', $a) .'/';
-		$permalink = implode('/', $a) . "/";		
+		$permalink = implode('/', $a) . "/";
+		//echo "<div style='background:yellow;'>";
+		echo $file ."<br/>";
+		//echo "</div>";
 
 		return array($pathToFolder, $permalink, $path);
 	}
@@ -298,14 +286,14 @@ final class Core {
 		if( $folder === NULL )		$folder = PUBDOCS;
 		if( $exclude === NULL )		$exclude = array();
 		if( $collection === NULL )	$collection = array();
-        
+
 		$handle = opendir( $folder );
 		while (($file = readdir($handle))!==false) {
 			if ( substr($file,0,1)!="." && substr($file,0,2)!="..") {
-				$key = $folder.'/'.$file;                                          
+				$key = $folder.'/'.$file;
 				if( is_dir( $key ) ){
 					$collection = Core::getFiles( $key, $exclude, $collection );
-				}else{       
+				}else{
 					//$fileArray = ;
 					//if ($fileArray) {
 						foreach(glob($folder ."/*.txt")  as $filename) {
@@ -328,30 +316,33 @@ final class Core {
 		$files = Core::getFiles($folder, array("$folder/index.txt"));
 		if ($sortBy) {
 			$files2 = array();
-			foreach($files as $file) {		  
-				$fields = Core::getFields($file); 
-				if ($filter) {                                 
+			foreach($files as $file) {
+				$fields = Core::getFields($file);
+				if ($filter) {
 					if (strpos($fields[$BASE_FILTERS[$filter]], $filterArgs) === FALSE) {
 						continue;
 					}
+				}
+				if ($fields["state"] > 1) {
+					continue;
 				}
 				$files2["$file"] = $fields[$sortBy];
 			}
 			asort($files2);
 			$files = array_keys($files2);
 		}
-		                    
+
 		if ($reverse) {
-			$files = array_reverse($files);	
-		}       
-		
+			$files = array_reverse($files);
+		}
+
 		//$files = array_slice($files, 0, 1); //TEMP
-		
-		return $files;     
+
+		return $files;
 	}
 
 	public static function getFields($file, $doProcessBody=true, $debug=false){
-		//if ($debug) { 
+		//if ($debug) {
 		//	echo "Core:getFields:$file\n";
 		//	readfile($file);
 		//}
@@ -361,11 +352,11 @@ final class Core {
 
 		$arr = array();
 		$c = file_get_contents( $file );
-		$lines = explode("\n", $c);    
-		//if ($debug) { 
+		$lines = explode("\n", $c);
+		//if ($debug) {
 		//	echo "Core:getFields:$file\n";
 		//	print_r($lines);
-		//}		
+		//}
 		$i = 0;
 		foreach($lines as $line){
 			if( strpos($line, '@') === 0 ){
