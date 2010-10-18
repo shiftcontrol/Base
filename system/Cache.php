@@ -3,7 +3,8 @@
 
 class Cache {
 
-	public static function read( $cacheName ){
+	public static function read( $cacheName ){ 
+		//echo "Cache:read\n";
 		if( CACHELIFE <= 0 ) return;
 		
 		$cacheFile = CACHEPATH . '/' . $cacheName;
@@ -16,17 +17,17 @@ class Cache {
 			$cacheDelta  = ($cacheAge - $now);
 			$sourceDelta = ($cacheAge - $sourceAge);
 			
-			echo "Cache:: sourceDelta: $sourceDelta, cacheDelta: $cacheDelta \n";
+			//echo "Cache:: sourceDelta: $sourceDelta, cacheDelta: $cacheDelta \n";
 			
 			if( ($cacheDelta > 0) && ($sourceDelta > 0) ){
 				// cache-file is newer than CACHELIFE seconds
 				// and source-file (.txt) is older than the cache-file -> use cache
-				echo ": Using cache";
+				//echo ": Using cache";
 				echo file_get_contents( $cacheFile );
 				exit;
 			}else{
 				// file is older than CACHELIFE -> clear cache
-				echo ": Refreshing cache";
+				//echo ": Refreshing cache";
 				unlink( $cacheFile );
 			}
 		}
@@ -34,9 +35,10 @@ class Cache {
 	}
 	
 	public static function write( $cacheName, $content ){
-		
-		$cacheFile = CACHEPATH .'/'. $cacheName;
-		
+		if (!$cacheName) {
+			$cacheName = "tmp";
+		}
+		$cacheFile = CACHEPATH .'/'. $cacheName;		
 		file_put_contents($cacheFile, $content);
 	}
 	

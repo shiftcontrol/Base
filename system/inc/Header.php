@@ -13,7 +13,7 @@ class Header {
 		}
 	}
 	
-	public static function Get( $type, $uri="" ){
+	public static function Get( $type="", $uri="" ){
 		echo "<!-- Header.Get() : -->";
 		foreach( self::$items as $item ){
 			echo "\n\t". $item;
