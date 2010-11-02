@@ -1,6 +1,7 @@
 sc_base_dev.tmproj
 .DS_Store
-.htaccess
+.htaccess      
+index.php
 */.DS_Store
 tools
 openid

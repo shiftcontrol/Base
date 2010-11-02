@@ -12,9 +12,10 @@ define("CACHELIFE",	5*60); // secs
 define("CACHEPATH",	'cache');
 define("URI",		$_SERVER['REQUEST_URI']);      
 define("PAGE_WIDTH", 950);
-define("MAX_MEDIA_HEIGHT", 550);   
+define("MAX_MEDIA_HEIGHT", 550);
+define("ADMIN_EMAIL", "admin@yourdomain.com");
 
-$FLICK_API_KEY = "7b42ea160ee5e6b82d7fab4bd6c1f3af";
+$FLICK_API_KEY = "12345678901234567890";
 
 $BASE_DIRECTORIES = array("blog", "experiments", "projects", "dev", "news", "team", "references");  
 
