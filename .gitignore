@@ -2,7 +2,10 @@ sc_base_dev.tmproj
 .DS_Store
 .htaccess
 */.DS_Store
+tools
+openid
 cache
 content
 static
 views
+favicon.ico

@@ -4,7 +4,9 @@ class Header {
 	
 	private static $items = array();
 	
-	public static function setup(){}
+	public static function setup(){
+		self::$items[] = '<link rel="pingback" href="http://'.$_SERVER['HTTP_HOST'].'/xmlrpc.php" />';
+	}
 	
 	public static function Add( $type, $uri="", $media="screen" ){
 		switch( $type ){
@@ -19,5 +21,5 @@ class Header {
 			echo "\n\t". $item;
 		}
 	}
-	
+
 }

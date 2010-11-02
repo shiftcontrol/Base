@@ -1,7 +1,7 @@
 <?php defined('VERSION') or die('No direct script access.');
 
-require 'system/inc/Media.php';
-require 'system/inc/Header.php';
+require_once('system/inc/Media.php');
+require_once('system/inc/Header.php');
 
 function addPercentages($n) {
 	return "%".$n."%";
@@ -47,7 +47,9 @@ final class Core {
 
     	# Check Cache
 		//TODO(marcin): better cache name e.g. replace all '/' with '_'
-		$cacheName = $cmd.$arg;
+		//$cacheName = $cmd.$arg;
+		$cacheName = implode("_", explode("/", URI));
+		//echo $cacheName;
 	    if( in_array($cmd, $BASE_DIRECTORIES) && ($arg=='list') ){
 			Cache::read( $cacheName );
 			# Directory-list requests
@@ -85,7 +87,15 @@ final class Core {
 
 			//PHP 5.2
 			$mime_type = mime_content_type(PUBDOCS.URI);
+			//echo PUBDOCS.URI."\n";
+			//echo $mime_type."\n";
 			header("Content-Type:$mime_type");
+			if ($mime_type == "image/jpeg" || $mime_type == "image/png") {
+				header("Cache-Control:max-age=604800, public");
+				header("Pragma:none");
+				header("Expires:none");
+			}
+
 			readfile(PUBDOCS.URI);
 			exit("");
 		}
@@ -250,8 +260,8 @@ final class Core {
 			$file = $path .'/'. INDEX . EXT;
 		}
 
-		error_log("Core::getFile folder : $folder");
-		error_log("Core::getFile path : $path");
+		//error_log("Core::getFile folder : $folder");
+		//error_log("Core::getFile path : $path");
 
 		if( !file_exists($file) ) {
 			error_log("Core::getFile path : $path");
@@ -275,7 +285,7 @@ final class Core {
 		$pathToFolder = '/'. PUBDOCS . implode('/', $a) .'/';
 		$permalink = implode('/', $a) . "/";
 		//echo "<div style='background:yellow;'>";
-		echo $file ."<br/>";
+		//echo $file ."<br/>";
 		//echo "</div>";
 
 		return array($pathToFolder, $permalink, $path);
@@ -323,7 +333,7 @@ final class Core {
 						continue;
 					}
 				}
-				if ($fields["state"] > 1) {
+				if (isset($fields["state"]) && ($fields["state"] > 1)) {
 					continue;
 				}
 				$files2["$file"] = $fields[$sortBy];
